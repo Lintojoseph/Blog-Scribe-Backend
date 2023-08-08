@@ -1,4 +1,5 @@
 import usermodel from '../models/usermodel'
+import BlogModel from '../models/blogmodel';
 const { sendEmailOTP } = require("../middleware/Nodemailer");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken')
@@ -193,5 +194,34 @@ export const userLogin= async (req:any, res:any, next:any) => {
         }
     } catch (error) {
         next(error)
+    }
+}
+
+export const writeBlog=async(req:any,res:any,next:any)=>{
+    try{
+        const {title,category,content}=req.body
+
+        // create new blog
+
+        const newBlog=new BlogModel({title,category,content})
+        await newBlog.save()
+
+        res.status.json({blog:newBlog})
+
+    }catch(error){
+        console.error("error",error)
+        res.status.json({message:'internal server error'})
+
+    }
+    
+}
+
+export const articleBlog=async(req:any,res:any,next:any)=>{
+    try{
+        const blogs= await BlogModel.find()
+        res.status.json({blogs})
+    }catch(error){
+        console.error("error occured",error)
+        res.status.json({message:'server error'})
     }
 }
