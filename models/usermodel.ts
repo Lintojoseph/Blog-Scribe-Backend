@@ -7,6 +7,7 @@ interface IUser extends Document {
     email: string;
     password: string;
     status:boolean;
+    blog:mongoose.Schema.Types.ObjectId;
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema({
@@ -26,6 +27,11 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    blog:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Blog',
+        required:true
+    }]
 });
 
 
