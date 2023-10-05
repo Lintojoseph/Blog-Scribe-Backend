@@ -327,6 +327,7 @@ export const writeBlog = async (req: any, res: any) => {
       console.log(req.userId)
 
       const likes=0;
+      const is_premium = false;
       // Create a DOM environment
       const dom = createWindow(content);
       const document = dom.document;
@@ -360,7 +361,8 @@ export const writeBlog = async (req: any, res: any) => {
         content: paragraphs.join('\n'), // Join paragraphs with newline
         images: imagePaths, // Store Cloudinary image URLs in the database
         user_id: req.userId,
-        likes:[]
+        likes:[],
+        is_premium
       });
       await newBlog.save();
   
@@ -548,4 +550,20 @@ export const updateArticle = async (req: any, res: any) => {
       res.status(500).json({ status: false, message: 'Internal server error' });
     }
   };
+
+  export const DeleteArticle=async(req:any,res:any)=>{
+    try{
+        BlogModel.findOneAndDelete({user:res.userId,_id:req.params.articleId})
+        .then((response)=>{
+            res.status(200).json({status:true,message:'article deleted successfully'})
+        }
+        )
+        .catch((error)=>{
+            res.status(500).json({status:false,message:'internal server error'})
+        })
+    }catch(error){
+        console.log(error)
+        res.status(500).json({status:false,message:'internal server error'})
+    }
+  }
   

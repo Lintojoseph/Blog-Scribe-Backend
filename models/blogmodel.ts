@@ -8,6 +8,7 @@ interface Blog {
     createdAt:Date;
     likes:mongoose.Schema.Types.ObjectId;
     user_id:mongoose.Schema.Types.ObjectId;
+    is_premium:Boolean;
   }
 
   const blogSchema: Schema<Blog & Document> = new Schema({
@@ -21,7 +22,8 @@ interface Blog {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users' // Reference to the User model (or whatever your user schema is called)
   }],
-    user_id:{type:mongoose.Schema.Types.ObjectId,ref:'users',required:true}
+    user_id:{type:mongoose.Schema.Types.ObjectId,ref:'users',required:true},
+    is_premium:{type: Boolean}
   });
 
   const BlogModel = mongoose.model<Blog & Document>('Blog', blogSchema);
