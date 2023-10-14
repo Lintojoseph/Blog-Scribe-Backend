@@ -1,4 +1,4 @@
-import UserModel from "../models/usermodel";
+import UserModel from "../models/usermodel"
 const jwt = require('jsonwebtoken')
 const secret_key = process.env.SECRET_KEY
 

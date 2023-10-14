@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createWindow } from 'domino';
-import usermodel from '../models/usermodel'
+import UserModel from '../models/usermodel';
 import BlogModel from '../models/blogmodel';
 const { sendEmailOTP } = require("../middleware/Nodemailer");
 const bcrypt = require("bcrypt");
@@ -58,7 +58,7 @@ export const userSignup = async (req: any, res: any, next: any) => {
         let { firstname, email, password } = req.body;
         console.log(email, 'hi')
 
-        const user = await usermodel.findOne({ email });
+        const user = await UserModel.findOne({ email });
         console.log(user, 'heee')
         if (!user) {
             userData = {
@@ -146,7 +146,7 @@ export const verifyOtp = async (req: any, res: any, next: any) => {
 
             let hashpassword = await bcrypt.hash(password, 10);
 
-            let userdetails = new usermodel({
+            let userdetails = new UserModel({
                 firstname: firstname,
                 email: email,
                 password: hashpassword,
@@ -192,7 +192,7 @@ export const userLogin = async (req: any, res: any, next: any) => {
         // throwing error if values are not provided
         if (!email || !password) throw Error("All Fields required");
         // finding the user
-        const user: any = await usermodel.findOne({ email: email });
+        const user: any = await UserModel.findOne({ email: email });
         console.log(user.status, "status")
         console.log(user, 'userrr')
         if (user) {
@@ -422,7 +422,7 @@ export const userArticle = async (req: any, res: any) => {
 
 export const userProfile = async (req: any, res: any) => {
     try {
-        const user = await usermodel.findById({ _id: req.userId });
+        const user = await UserModel.findById({ _id: req.userId });
         
         if (!user) {
             return res.status(404).json({ message: 'User not found' });

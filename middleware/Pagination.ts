@@ -1,6 +1,5 @@
 import BlogModel from "../models/blogmodel";
 import UserModel from "../models/usermodel";
-
 interface PaginationResults {
     next?: {
         page: number;
