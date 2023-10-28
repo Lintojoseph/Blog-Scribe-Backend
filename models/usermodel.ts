@@ -1,3 +1,4 @@
+import { subscriptions } from './../controller/paymentcontroller';
 import mongoose, { Document, Model, Schema, model,CallbackError } from "mongoose";
 import bcrypt from 'bcrypt';
 
@@ -8,6 +9,8 @@ interface IUser extends Document {
     password: string;
     status:boolean;
     blog:mongoose.Schema.Types.ObjectId;
+    subscriptions:mongoose.Schema.Types.ObjectId;
+    isPremium:boolean;
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema({
@@ -31,7 +34,16 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Blog',
         required:true
-    }]
+    }],
+    subscriptions:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Subscription',
+        required:true
+    }],
+    isPremium: {
+        type: Boolean,
+        default: false, // Default value for a new user
+      },
 });
 
 

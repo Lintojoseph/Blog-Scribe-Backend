@@ -3,6 +3,7 @@ import path from 'path';
 import { createWindow } from 'domino';
 import UserModel from '../models/usermodel';
 import BlogModel from '../models/blogmodel';
+import SubscriptionModel from '../models/subscribtionmodel';
 const { sendEmailOTP } = require("../middleware/Nodemailer");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken')
@@ -327,7 +328,16 @@ export const writeBlog = async (req: any, res: any) => {
       console.log(req.userId)
 
       const likes=0;
-      const is_premium = false;
+    //   const userId = req.userId; // Replace with your actual way of getting the user ID
+    //   console.log(userId,'uuser')
+    //   const user = await SubscriptionModel.findOne({ user_id: userId });
+
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found' });
+    // }
+
+    // // Now, user.isPremium will give you the premium status
+    // const isPremium = user.isPremium;
       // Create a DOM environment
       const dom = createWindow(content);
       const document = dom.document;
@@ -362,7 +372,7 @@ export const writeBlog = async (req: any, res: any) => {
         images: imagePaths, // Store Cloudinary image URLs in the database
         user_id: req.userId,
         likes:[],
-        is_premium
+        // is_premium:isPremium
       });
       await newBlog.save();
   
@@ -377,16 +387,133 @@ export const writeBlog = async (req: any, res: any) => {
   
 
 
+//   export const articleBlog = async (req: any, res: any, next: any) => {
+//     try {
+//       const blogs = await BlogModel.find();
+//       console.log(blogs, 'blogssss');
+//       const userIds = blogs.map((blog) => blog.user_id);
+//       console.log(userIds, 'uuuu');
+//       const subscriptions = await SubscriptionModel.find({ user_id: { $in: userIds } });
+//       console.log(subscriptions, 'subbs');
+  
+//       const blogsWithPremiumInfo = blogs.map((blog) => {
+//         // Check if blog.user_id is defined
+//         if (blog.user_id) {
+//           const isPremium = subscriptions.some((subscription) => {
+//             // Check if both subscription.user_id and blog.user_id are defined
+//             return subscription.user_id && blog.user_id && subscription.user_id.toString() === blog.user_id.toString();
+//           });
+//           return { ...blog.toObject(), isPremium };
+//         } else {
+//           return blog.toObject(); // Return the original blog if user_id is undefined
+//         }
+//       });
+  
+//       console.log(blogsWithPremiumInfo, 'blogsWithPremiumInfo');
+  
+//       res.status(200).json({ blogs: blogsWithPremiumInfo });
+//     } catch (error) {
+//       console.error('error occurred', error);
+//       res.status(500).json({ message: 'server error' });
+//     }
+//   };
+// export const articleBlog = async (req: any, res: any, next: any) => {
+//     try {
+//       const blogs = await BlogModel.find();
+//       console.log(blogs, 'blogssss');
+//       const userIds = blogs.map((blog) => blog.user_id);
+//       console.log(userIds, 'uuuu');
+  
+//       // Fetch subscriptions
+//       const subscriptions = await SubscriptionModel.find({ user_id: { $in: userIds } });
+//       console.log(subscriptions, 'subbs');
+  
+//       // Fetch user premium info
+//       const users = await UserModel.find({ _id: { $in: userIds } });
+//       console.log(users, 'users');
+  
+//       const blogsWithPremiumInfo = blogs.map((blog) => {
+//         // Check if blog.user_id is defined
+//         if (blog.user_id) {
+//           // Check if the user is in subscriptions
+//           const isPremiumSubscription = subscriptions.some((subscription) => {
+//             return subscription.user_id && blog.user_id && subscription.user_id.toString() === blog.user_id.toString();
+//           });
+  
+//           // Check if the user is premium based on UserModel
+//           const user = users.find((user) => user._id.toString() === blog.user_id.toString());
+//           const isPremiumUserModel = user ? user.isPremium : false;
+  
+//           // Combine both premium statuses
+//           const isPremium = isPremiumSubscription || isPremiumUserModel;
+  
+//           return { ...blog.toObject(), isPremium };
+//         } else {
+//           return blog.toObject(); // Return the original blog if user_id is undefined
+//         }
+//       });
+  
+//       console.log(blogsWithPremiumInfo, 'blogsWithPremiumInfo');
+  
+//       res.status(200).json({ blogs: blogsWithPremiumInfo });
+//     } catch (error) {
+//       console.error('error occurred', error);
+//       res.status(500).json({ message: 'server error' });
+//     }
+//   };
 export const articleBlog = async (req: any, res: any, next: any) => {
     try {
-        const blogs = await BlogModel.find()
-        // console.log(blogs, 'blog')
-        res.status(200).json({ blogs })
+      const blogs = await BlogModel.find();
+      console.log(blogs, 'blogssss');
+      const userIds = blogs.map((blog) => blog.user_id);
+      console.log(userIds, 'uuuu');
+  
+      // Fetch subscriptions
+      const subscriptions = await SubscriptionModel.find({ user_id: { $in: userIds } });
+      console.log(subscriptions, 'subbs');
+  
+      // Fetch user premium info
+      const users = await UserModel.find({ _id: { $in: userIds } });
+      console.log(users, 'users');
+  
+      const blogsWithPremiumInfo = blogs.map((blog) => {
+        // Check if blog.user_id is defined
+        if (blog.user_id) {
+          // Check if the user is in subscriptions
+          const isPremiumSubscription = subscriptions.some((subscription) => {
+            return subscription.user_id && blog.user_id && subscription.user_id.toString() === blog.user_id.toString();
+          });
+  
+          // Check if the user is premium based on UserModel
+          const user = users.find((user) => user._id.toString() === blog.user_id.toString());
+          const isPremiumUserModel = user ? user.isPremium : false;
+  
+          // Combine both premium statuses
+          const isPremium = isPremiumSubscription || isPremiumUserModel;
+  
+          return { ...blog.toObject(), isPremium };
+        } else {
+          return blog.toObject(); // Return the original blog if user_id is undefined
+        }
+      });
+  
+      console.log(blogsWithPremiumInfo, 'blogsWithPremiumInfo');
+  
+      res.status(200).json({ blogs: blogsWithPremiumInfo, currentUserPremiumStatus: true }); // Set the currentUserPremiumStatus
     } catch (error) {
-        console.error("error occured", error)
-        res.status(500).json({ message: 'server error' })
+      console.error('error occurred', error);
+      res.status(500).json({ message: 'server error' });
     }
-}
+};
+
+  
+  
+  
+  
+  
+  
+  
+  
 
 export const categories=async (req:any,res:any)=>{
     try{
@@ -413,7 +540,14 @@ export const userArticle = async (req: any, res: any) => {
         }
 
         console.log(articleUser, 'article');
-        res.json({ articleUser });
+        const userId = (articleUser.user_id as any)?._id;
+        
+        const subscription = await SubscriptionModel.findOne({ user_id: userId });
+        console.log(subscription,'cription')
+        const isPremium = !!subscription;
+        
+        console.log(isPremium,'subbbb')
+        res.json({ articleUser: { ...articleUser.toObject(), isPremium, user_id: userId }});
     } catch (error) {
         console.log('server error', error);
         res.status(500).json({ message: 'internal server error' });
@@ -470,28 +604,7 @@ export const createlike = async (req: any, res: any) => {
         res.status(422).json({ error });
     }
 
-    // try {
-    //     const { blogId } = req.body; // Assuming you pass the blog ID in the request body
     
-    //     // Check if the user has already liked the blog post
-    //     const existingLike = await BlogModel.findOne({ user: req.user.id, blog: blogId });
-    
-    //     if (existingLike) {
-    //       return res.status(400).json({ message: 'You have already liked this post.' });
-    //     }
-    
-    //     // Create a new Like document
-    //     const newLike = new BlogModel({ user: req.user.id, blog: blogId });
-    //     await newLike.save();
-    
-    //     // Update the Blog document to add the new Like reference
-    //     await BlogModel.findByIdAndUpdate(blogId, { $push: { likes: newLike._id } });
-    
-    //     res.status(200).json({ message: 'Liked successfully' });
-    //   } catch (error) {
-    //     console.error(error);
-    //     res.status(500).json({ message: 'Internal server error' });
-    //   }
 }
 
 export const getLike=async(req:any,res:any)=>{
