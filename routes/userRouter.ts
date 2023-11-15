@@ -1,7 +1,7 @@
 import express from 'express'
 const router= express.Router();
 import upload from '../middleware/multer'
-import { userSignup,verifyOtp,userLogin,writeBlog,articleBlog,categories,userArticle,userProfile,createlike,getLike,Editarticle,updateArticle,DeleteArticle } from '../controller/userController';
+import { userSignup,verifyOtp,userLogin,writeBlog,articleBlog,categories,userArticle,userProfile,createlike,getLike,Editarticle,updateArticle,DeleteArticle,addComment } from '../controller/userController';
 import verifyLogin from '../middleware/authuser'
 import { subscriptions,verifypayment } from '../controller/paymentcontroller';
 
@@ -34,5 +34,7 @@ router.put('/delete-article/:articleId',verifyLogin,DeleteArticle)
 router.post('/create-subscription',verifyLogin,subscriptions)
 
 router.post('/verifypayment',verifyLogin,verifypayment)
+
+router.put('/comment/:id',verifyLogin,addComment)
 
 export { router as UserRouter };

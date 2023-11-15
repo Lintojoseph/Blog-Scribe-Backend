@@ -8,6 +8,7 @@ interface Blog {
     createdAt:Date;
     likes:mongoose.Schema.Types.ObjectId;
     user_id:mongoose.Schema.Types.ObjectId;
+    comments:string
     // isPremium:Boolean;
   }
 
@@ -23,7 +24,17 @@ interface Blog {
       ref: 'users' // Reference to the User model (or whatever your user schema is called)
   }],
     user_id:{type:mongoose.Schema.Types.ObjectId,ref:'users',required:true},
-    // isPremium:{type: Boolean}
+    comments:[
+      {
+        text:String,
+        created:{type:Date,default:Date.now},
+        postedBy:{
+          type:mongoose.Schema.Types.ObjectId,
+          ref:'users'
+        }
+      }
+    ]
+    
   });
 
   const BlogModel = mongoose.model<Blog & Document>('Blog', blogSchema);

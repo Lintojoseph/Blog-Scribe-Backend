@@ -273,54 +273,6 @@ export const userLogin = async (req: any, res: any, next: any) => {
 //     }
 //   };
 
-// export const writeBlog = async (req: any, res: any, next: any) => {
-//     try {
-//       const { title, category, content } = req.body;
-  
-//       // Create a DOM environment
-//       const dom = createWindow(content);
-//       const document = dom.document;
-  
-//       // Extract and process images
-//       const imgElements = Array.from(document.querySelectorAll('img'));
-
-//       const imagePaths: string[] = [];
-  
-//       imgElements.forEach((imgElement: any, index: number) => {
-//         const imageData = imgElement.src.replace(/^data:image\/\w+;base64,/, '');
-//         const imageBuffer = Buffer.from(imageData, 'base64');
-//         const imageFilename = `Image${index + 1}.jpg`; // Set dynamic image filenames
-  
-//         const outputFolder = path.join(__dirname, '..', 'public', 'images', 'Blog');
-//         if (!fs.existsSync(outputFolder)) {
-//           fs.mkdirSync(outputFolder, { recursive: true });
-//         }
-//         const imagePath = path.join(outputFolder, imageFilename);
-//         fs.writeFileSync(imagePath, imageBuffer);
-  
-//         // Replace image src with the new image path
-//         imgElement.src = `/images/Blog/${imageFilename}`;
-//         imagePaths.push(imagePath);
-//       });
-  
-//       // Extract and process paragraphs
-//       const paragraphs = Array.from(document.querySelectorAll('p')).map((p: any) => p.textContent);
-  
-//       // Create new blog
-//       const newBlog = new BlogModel({
-//         title,
-//         category,
-//         content: paragraphs.join('\n'), // Join paragraphs with newline
-//         images: imagePaths, // Store image paths in the database
-//       });
-//       await newBlog.save();
-  
-//       res.status(201).json({ blog: newBlog });
-//     } catch (error) {
-//       console.error('error', error);
-//       res.status(500).json({ message: 'internal server error' });
-//     }
-// };
 
 export const writeBlog = async (req: any, res: any) => {
     try {
@@ -328,16 +280,7 @@ export const writeBlog = async (req: any, res: any) => {
       console.log(req.userId)
 
       const likes=0;
-    //   const userId = req.userId; // Replace with your actual way of getting the user ID
-    //   console.log(userId,'uuser')
-    //   const user = await SubscriptionModel.findOne({ user_id: userId });
-
-    // if (!user) {
-    //   return res.status(404).json({ message: 'User not found' });
-    // }
-
-    // // Now, user.isPremium will give you the premium status
-    // const isPremium = user.isPremium;
+    
       // Create a DOM environment
       const dom = createWindow(content);
       const document = dom.document;
@@ -372,6 +315,7 @@ export const writeBlog = async (req: any, res: any) => {
         images: imagePaths, // Store Cloudinary image URLs in the database
         user_id: req.userId,
         likes:[],
+        comments:[]
         // is_premium:isPremium
       });
       await newBlog.save();
@@ -417,50 +361,7 @@ export const writeBlog = async (req: any, res: any) => {
 //       res.status(500).json({ message: 'server error' });
 //     }
 //   };
-// export const articleBlog = async (req: any, res: any, next: any) => {
-//     try {
-//       const blogs = await BlogModel.find();
-//       console.log(blogs, 'blogssss');
-//       const userIds = blogs.map((blog) => blog.user_id);
-//       console.log(userIds, 'uuuu');
-  
-//       // Fetch subscriptions
-//       const subscriptions = await SubscriptionModel.find({ user_id: { $in: userIds } });
-//       console.log(subscriptions, 'subbs');
-  
-//       // Fetch user premium info
-//       const users = await UserModel.find({ _id: { $in: userIds } });
-//       console.log(users, 'users');
-  
-//       const blogsWithPremiumInfo = blogs.map((blog) => {
-//         // Check if blog.user_id is defined
-//         if (blog.user_id) {
-//           // Check if the user is in subscriptions
-//           const isPremiumSubscription = subscriptions.some((subscription) => {
-//             return subscription.user_id && blog.user_id && subscription.user_id.toString() === blog.user_id.toString();
-//           });
-  
-//           // Check if the user is premium based on UserModel
-//           const user = users.find((user) => user._id.toString() === blog.user_id.toString());
-//           const isPremiumUserModel = user ? user.isPremium : false;
-  
-//           // Combine both premium statuses
-//           const isPremium = isPremiumSubscription || isPremiumUserModel;
-  
-//           return { ...blog.toObject(), isPremium };
-//         } else {
-//           return blog.toObject(); // Return the original blog if user_id is undefined
-//         }
-//       });
-  
-//       console.log(blogsWithPremiumInfo, 'blogsWithPremiumInfo');
-  
-//       res.status(200).json({ blogs: blogsWithPremiumInfo });
-//     } catch (error) {
-//       console.error('error occurred', error);
-//       res.status(500).json({ message: 'server error' });
-//     }
-//   };
+// 
 export const articleBlog = async (req: any, res: any, next: any) => {
     try {
       const blogs = await BlogModel.find();
@@ -486,10 +387,14 @@ export const articleBlog = async (req: any, res: any, next: any) => {
   
           // Check if the user is premium based on UserModel
           const user = users.find((user) => user._id.toString() === blog.user_id.toString());
+          console.log(user,'sirrrr')
           const isPremiumUserModel = user ? user.isPremium : false;
-  
+        //   console.log(isPremiumUserModel,'isuuuu')
+        console.log('isPremiumSubscription:', isPremiumSubscription);
+        console.log('isPremiumUserModel:', isPremiumUserModel);
           // Combine both premium statuses
-          const isPremium = isPremiumSubscription || isPremiumUserModel;
+          const isPremium = isPremiumSubscription && isPremiumUserModel;
+          console.log(isPremium,'issss')
   
           return { ...blog.toObject(), isPremium };
         } else {
@@ -497,9 +402,9 @@ export const articleBlog = async (req: any, res: any, next: any) => {
         }
       });
   
-      console.log(blogsWithPremiumInfo, 'blogsWithPremiumInfo');
-  
-      res.status(200).json({ blogs: blogsWithPremiumInfo, currentUserPremiumStatus: true }); // Set the currentUserPremiumStatus
+    //   console.log(blogsWithPremiumInfo, 'blogsWithPremiumInfo');
+      const currentUserPremiumStatus = true; 
+      res.status(200).json({ blogs: blogsWithPremiumInfo,currentUserPremiumStatus}); // Set the currentUserPremiumStatus
     } catch (error) {
       console.error('error occurred', error);
       res.status(500).json({ message: 'server error' });
@@ -679,4 +584,38 @@ export const updateArticle = async (req: any, res: any) => {
         res.status(500).json({status:false,message:'internal server error'})
     }
   }
+
+  export const addComment = async (req: any, res: any, next: any) => {
+    const { comment } = req.body;
+    try {
+      const postcomment = await BlogModel.findByIdAndUpdate(
+        req.body.id,
+        {
+          $push: { comments: { text: comment, postedBy: req.user._id } },
+        },
+        { new: true }
+      );
+  
+      if (!postcomment) {
+        // Handle the case where no document was found with the provided id
+        return res.status(404).json({
+          success: false,
+          message: 'No blog post found with the provided id',
+        });
+      }
+  
+      const post = await BlogModel.findById(postcomment._id).populate(
+        'comments.postedBy',
+        'name email'
+      );
+  
+      res.status(200).json({
+        success: true,
+        post,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  
   
