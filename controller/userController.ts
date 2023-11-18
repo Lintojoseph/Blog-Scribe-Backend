@@ -586,15 +586,17 @@ export const updateArticle = async (req: any, res: any) => {
   }
 
   export const addComment = async (req: any, res: any, next: any) => {
-    const { comment } = req.body;
+    const { comment,id } = req.body;
     try {
+        console.log('Comment Request:', req.body);
       const postcomment = await BlogModel.findByIdAndUpdate(
-        req.body.id,
+        id,
         {
-          $push: { comments: { text: comment, postedBy: req.user._id } },
+          $push: { comments: { text: comment, postedBy: req.userId } },
         },
         { new: true }
       );
+      console.log(postcomment,'ddddd')
   
       if (!postcomment) {
         // Handle the case where no document was found with the provided id

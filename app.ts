@@ -46,11 +46,13 @@ const http=require('http')
 const server = require('http').createServer(app);
 import { Server } from "socket.io";
 const io = new Server(server);
-io.on('connection',(socket)=>{
-  socket.on('comment',(msg)=>{
-    console.log('new comment recieved',msg)
-  })
-})
+io.on('connection', (socket) => {
+  socket.on('comment', (msg) => {
+    console.log('new comment received', msg);
+    io.emit('new-comment', msg);
+  });
+});
+
 
 // Use process.env.APP_URL if available, otherwise use port 4000
 const PORT = process.env.APP_URL || 4000;
