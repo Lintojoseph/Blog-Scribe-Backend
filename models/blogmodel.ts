@@ -8,7 +8,8 @@ interface Blog {
     createdAt:Date;
     likes:mongoose.Schema.Types.ObjectId;
     user_id:mongoose.Schema.Types.ObjectId;
-    comments:string
+    comments:string,
+    
     // isPremium:Boolean;
   }
 
@@ -33,7 +34,8 @@ interface Blog {
           ref:'users'
         }
       }
-    ]
+    ],
+    
     
   });
 

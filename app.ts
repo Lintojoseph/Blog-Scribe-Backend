@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
     io.emit('new-comment', msg);
   });
 });
-
+export { io };
 
 // Use process.env.APP_URL if available, otherwise use port 4000
 const PORT = process.env.APP_URL || 4000;

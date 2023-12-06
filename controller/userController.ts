@@ -12,6 +12,7 @@ const secret_key = process.env.SECRET_KEY
 import {v2 as cloudinary} from 'cloudinary';
 import mongoose from 'mongoose';
 import { response } from 'express';
+import { io } from '../app';
 
 // import { sendVerificationCode, verifyOtp } from '../helpers/otp_verification'
 // import { response } from 'express';
@@ -331,37 +332,6 @@ export const writeBlog = async (req: any, res: any) => {
   
 
 
-//   export const articleBlog = async (req: any, res: any, next: any) => {
-//     try {
-//       const blogs = await BlogModel.find();
-//       console.log(blogs, 'blogssss');
-//       const userIds = blogs.map((blog) => blog.user_id);
-//       console.log(userIds, 'uuuu');
-//       const subscriptions = await SubscriptionModel.find({ user_id: { $in: userIds } });
-//       console.log(subscriptions, 'subbs');
-  
-//       const blogsWithPremiumInfo = blogs.map((blog) => {
-//         // Check if blog.user_id is defined
-//         if (blog.user_id) {
-//           const isPremium = subscriptions.some((subscription) => {
-//             // Check if both subscription.user_id and blog.user_id are defined
-//             return subscription.user_id && blog.user_id && subscription.user_id.toString() === blog.user_id.toString();
-//           });
-//           return { ...blog.toObject(), isPremium };
-//         } else {
-//           return blog.toObject(); // Return the original blog if user_id is undefined
-//         }
-//       });
-  
-//       console.log(blogsWithPremiumInfo, 'blogsWithPremiumInfo');
-  
-//       res.status(200).json({ blogs: blogsWithPremiumInfo });
-//     } catch (error) {
-//       console.error('error occurred', error);
-//       res.status(500).json({ message: 'server error' });
-//     }
-//   };
-// 
 export const articleBlog = async (req: any, res: any, next: any) => {
     try {
       const blogs = await BlogModel.find();
@@ -484,27 +454,24 @@ export const userProfile = async (req: any, res: any) => {
 
 export const createlike = async (req: any, res: any) => {
     try {
-        const { id } = req.params; // Get the 'id' from route params
-        const userId = req.userId._id; // Assuming you have the user ID from authentication
-        console.log('Received PUT request with id:', id);
-        console.log(userId,'userr id')
-        const updatedBlog = await BlogModel.findByIdAndUpdate(
-            id,
-            {
-                $push: { likes: userId },
-            },
-            {
-                new: true,
-            }
-        ).exec();
+        
 
-        console.log(updatedBlog,'updated')
+        const post=await BlogModel.findByIdAndUpdate(req.params.id,{
+            $addToSet:{likes:req.userId}
+        },
+        {new:true})
+        console.log(post,'poost')
 
-        if (!updatedBlog) {
-            return res.status(404).json({ error: 'Blog not found' });
-        }
+        const posts=await BlogModel.find().sort({created:-1}).populate('postedBy', 'firstname')
+        console.log(posts,'dsdsd')
+        io.emit('add-like',posts)
+        console.log('add-like event emitted');
 
-        res.json({updatedBlog});
+        res.status(200).json({
+            success:true,
+            post,
+            posts
+        })
     } catch (error) {
         res.status(422).json({ error });
     }
@@ -512,18 +479,25 @@ export const createlike = async (req: any, res: any) => {
     
 }
 
-export const getLike=async(req:any,res:any)=>{
+export const removeLike=async(req:any,res:any,next:any)=>{
     try {
-        const { blogId } = req.params;
-    
-        // Find all likes for the specified blog post
-        const likes = await BlogModel.find({ blog: blogId });
-    
-        res.status(200).json({ likes });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-      }
+        const post = await BlogModel.findByIdAndUpdate(req.params.id, {
+            $pull: { likes: req.userId }
+        },
+            { new: true }
+        );
+
+        const posts = await BlogModel.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
+        io.emit('remove-like', posts);
+
+        res.status(200).json({
+            success: true,
+            post
+        })
+
+    } catch (error:any) {
+        next(error);
+    }
 }
 
 export const Editarticle=async(req:any,res:any)=>{
@@ -605,7 +579,7 @@ export const updateArticle = async (req: any, res: any) => {
           message: 'No blog post found with the provided id',
         });
       }
-  
+      
       const post = await BlogModel.findById(postcomment._id).populate(
         'comments.postedBy',
         'name email'
